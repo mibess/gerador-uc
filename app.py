@@ -7,6 +7,9 @@ from distribuidoras import LISTA_DISTRIBUIDORAS
 # Inicializa o app Flask
 app = Flask(__name__)
 
+# Mantemos a lista ordenada em memória para evitar reordená-la a cada requisição.
+DISTRIBUIDORAS_ORDENADAS = sorted(LISTA_DISTRIBUIDORAS)
+
 # --- Lógica de Negócio (Baseada no Manual ANEL) ---
 
 # Extraído do ANEXO I (páginas 8-10 do PDF)
@@ -64,6 +67,19 @@ def formatar_uc(sequencial_str: str, distribuidora_str: str, n2: str, n1: str) -
     
     return f"{p1}.{p2}.{p3}.{p4}.{p5}-{dvs}"
 
+
+def gerar_uc_para_distribuidora(distribuidora_cod: str) -> str:
+    """
+    Encapsula a geração completa do número de UC para reuso.
+    """
+    if not distribuidora_cod:
+        raise ValueError("Distribuidora é obrigatória.")
+
+    sequencial_num = random.randint(0, 9_999_999_999)
+    sequencial_str = str(sequencial_num).zfill(10)
+    n2, n1 = calcular_dv(sequencial_str, distribuidora_cod)
+    return formatar_uc(sequencial_str, distribuidora_cod, n2, n1)
+
 # --- Template HTML (embutido) ---
 
 # A variável HTML_TEMPLATE foi removida daqui e movida 
@@ -74,32 +90,43 @@ def formatar_uc(sequencial_str: str, distribuidora_str: str, n2: str, n1: str) -
 @app.route('/', methods=['GET', 'POST'])
 def index():
     numero_uc_formatado = None
-    distribuidora_selecionada = None  # Variável para guardar a seleção
-    
-    if request.method == 'POST':
-        # 1. Obter o código da distribuidora do formulário
-        distribuidora_cod = request.form['distribuidora']
-        distribuidora_selecionada = distribuidora_cod  # Guarda o código selecionado
-        
-        # 2. Gerar um número sequencial aleatório de 10 dígitos (N15 a N6)
-        # Conforme Seção 3.1.2
-        sequencial_num = random.randint(0, 9_999_999_999)
-        sequencial_str = str(sequencial_num).zfill(10)
-        
-        # 3. Calcular os dígitos verificadores
-        n2, n1 = calcular_dv(sequencial_str, distribuidora_cod)
-        
-        # 4. Formatar o número completo
-        numero_uc_formatado = formatar_uc(sequencial_str, distribuidora_cod, n2, n1)
+    distribuidora_selecionada = None  # Variavel para guardar a selecao
 
-    # Renderiza o template passando a lista de distribuidoras e o resultado (se houver)
-    # Agora usa render_template() para carregar o arquivo .html
+    if request.method == 'POST':
+        distribuidora_cod = request.form['distribuidora']
+        distribuidora_selecionada = distribuidora_cod  # Guarda o codigo selecionado
+        numero_uc_formatado = gerar_uc_para_distribuidora(distribuidora_cod)
+
     return render_template(
-        "index.html",
-        distribuidoras=sorted(LISTA_DISTRIBUIDORAS), # Ordena a lista importada
+        'index.html',
+        distribuidoras=DISTRIBUIDORAS_ORDENADAS,
         numero_uc=numero_uc_formatado,
-        distribuidora_selecionada=distribuidora_selecionada # Passa a seleção para o template
+        distribuidora_selecionada=distribuidora_selecionada
     )
+
+
+@app.route('/api/gerar-uc', methods=['POST'])
+def gerar_uc_api():
+    """
+    Endpoint usado pelo front-end para gerar o código sem recarregar a página.
+    """
+    data = request.get_json(silent=True) or request.form
+    distribuidora_cod = (data or {}).get('distribuidora')
+
+    if not distribuidora_cod:
+        return {"error": "Distribuidora é obrigatória."}, 400
+
+    numero_uc_formatado = gerar_uc_para_distribuidora(distribuidora_cod)
+    distribuidora_nome = next(
+        (nome for nome, codigo in LISTA_DISTRIBUIDORAS if codigo == distribuidora_cod),
+        None
+    )
+
+    return {
+        "numero_uc": numero_uc_formatado,
+        "distribuidora": distribuidora_cod,
+        "nome": distribuidora_nome,
+    }, 200
 
 # --- Executar o App ---
 

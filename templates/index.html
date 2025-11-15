@@ -66,7 +66,7 @@
             </div>
 
             <!-- FORM SELECT -->
-            <form method="POST" action="/" class="space-y-6">
+            <form id="geradorForm" method="POST" action="/" class="space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
                         Selecione a Distribuidora
@@ -141,31 +141,33 @@
 
             </form>
 
-            {% if numero_uc %}
             <!-- RESULTADO -->
-            <div id="result-container" class="mt-8 pt-6 border-t border-slate-300/70">
-                <p class="text-xs font-medium text-slate-600 mb-3 text-center">
-                    Novo Código de Unidade Consumidora (UC):
-                </p>
+            <div id="result-wrapper" class="{% if not numero_uc %}hidden{% endif %}">
+                <div id="result-container"
+                     class="mt-8 pt-6 border-t border-slate-300/70 transition-all duration-300 ease-out transform {% if numero_uc %}opacity-100 translate-y-0{% else %}opacity-0 translate-y-2{% endif %}">
+                    <p class="text-xs font-medium text-slate-600 mb-3 text-center">
+                        Novo Código de Unidade Consumidora (UC):
+                    </p>
 
-                <div class="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-300 px-4 py-3 shadow-sm">
-                    <span id="uc-gerada" class="text-lg font-mono font-semibold tracking-[0.2em] text-slate-900">
-                        {{ numero_uc }}
-                    </span>
+                    <div class="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-300 px-4 py-3 shadow-sm">
+                        <span id="uc-gerada" class="text-lg font-mono font-semibold tracking-[0.2em] text-slate-900" aria-live="polite">
+                            {{ numero_uc or '' }}
+                        </span>
 
-                    <button id="copyButton"
-                            onclick="copiarUC()"
-                            class="ml-3 rounded-full text-white px-3 py-2 text-xs font-medium transition"
-                            style="background-color: var(--aneel-blue-light);">
-                        Copiar
-                    </button>
+                        <button id="copyButton"
+                                onclick="copiarUC()"
+                                class="ml-3 rounded-full text-white px-3 py-2 text-xs font-medium transition"
+                                style="background-color: var(--aneel-blue-light);">
+                            Copiar
+                        </button>
+                    </div>
+
+                    <p class="mt-3 text-[11px] text-center text-slate-500">
+                        *O número sequencial (10 primeiros dígitos) é gerado aleatoriamente.
+                    </p>
                 </div>
-
-                <p class="mt-3 text-[11px] text-center text-slate-500">
-                    *O número sequencial (10 primeiros dígitos) é gerado aleatoriamente.
-                </p>
             </div>
-            {% endif %}
+
 
         </div>
 
@@ -194,6 +196,75 @@ function copiarUC() {
         }, 2000);
     });
 }
+</script>
+
+<script>
+(function () {
+    const form = document.getElementById('geradorForm');
+    const distribuidoraInput = document.getElementById('distribuidoraInput');
+    const resultWrapper = document.getElementById('result-wrapper');
+    const resultContainer = document.getElementById('result-container');
+    const ucSpan = document.getElementById('uc-gerada');
+    const triggerButton = document.getElementById('distribuidoraButton');
+
+    if (!form || !window.fetch || !distribuidoraInput || !resultWrapper || !resultContainer || !ucSpan) {
+        return;
+    }
+
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (!submitButton) return;
+
+    const defaultButtonText = submitButton.innerText.trim();
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        if (!distribuidoraInput.value) {
+            triggerButton?.focus();
+            triggerButton?.classList.add('ring-2', 'ring-[var(--aneel-blue-light)]');
+            setTimeout(function () {
+                triggerButton?.classList.remove('ring-2', 'ring-[var(--aneel-blue-light)]');
+            }, 400);
+            return;
+        }
+
+        // o processo é muito rápido, então apenas um leve feedback visual
+        //submitButton.disabled = true;
+        //submitButton.innerText = 'Gerando...';
+        submitButton.classList.add('opacity-70', 'cursor-not-allowed');
+
+        try {
+            const response = await fetch('/api/gerar-uc', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ distribuidora: distribuidoraInput.value })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Não foi possível gerar o código.');
+            }
+
+            ucSpan.innerText = data.numero_uc;
+            resultWrapper.classList.remove('hidden');
+            resultContainer.classList.remove('opacity-100', 'translate-y-0');
+            resultContainer.classList.add('opacity-0', 'translate-y-2');
+            resultContainer.getBoundingClientRect();
+            resultContainer.classList.remove('opacity-0', 'translate-y-2');
+            resultContainer.classList.add('opacity-100', 'translate-y-0');
+            resultWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (error) {
+            console.error(error);
+            alert(error.message || 'Erro ao gerar o código. Tente novamente.');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerText = defaultButtonText;
+            submitButton.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+    });
+})();
 </script>
 
 <script>

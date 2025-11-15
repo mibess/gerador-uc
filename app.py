@@ -5,7 +5,7 @@ from flask import Flask, request, render_template
 from distribuidoras import LISTA_DISTRIBUIDORAS
 
 # Inicializa o app Flask
-app = Flask(__name__)
+app = Flask(__name__, static_folder='statics', static_url_path='/statics')
 
 # Mantemos a lista ordenada em memória para evitar reordená-la a cada requisição.
 DISTRIBUIDORAS_ORDENADAS = sorted(LISTA_DISTRIBUIDORAS)

@@ -1,5 +1,6 @@
 import random
-from flask import Flask, request, render_template_string
+# Trocamos 'render_template_string' por 'render_template'
+from flask import Flask, request, render_template
 # Importa a lista do novo arquivo
 from distribuidoras import LISTA_DISTRIBUIDORAS
 
@@ -65,104 +66,8 @@ def formatar_uc(sequencial_str: str, distribuidora_str: str, n2: str, n1: str) -
 
 # --- Template HTML (embutido) ---
 
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de UC ANEEL</title>
-    <!-- Usando Tailwind CSS para um visual limpo e rápido -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Adiciona um estilo para o resultado copiado */
-        @keyframes flash {
-            0% { background-color: #f0f9ff; }
-            100% { background-color: #ffffff; }
-        }
-        .flash {
-            animation: flash 0.5s ease-out;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-
-    <div class="w-full max-w-lg p-8 bg-white rounded-xl shadow-lg border border-gray-200">
-        
-        <h1 class="text-2xl font-bold text-center text-blue-800 mb-2">Gerador de UC</h1>
-        <p class="text-center text-gray-600 mb-6">Padrão REN nº 1.095/2024 (ANEEL)</p>
-
-        <!-- Formulário de Geração -->
-        <form method="POST" action="/" class="space-y-6">
-            <div>
-                <label for="distribuidora" class="block text-sm font-medium text-gray-700 mb-2">
-                    1. Selecione a Distribuidora
-                </label>
-                <select id="distribuidora" name="distribuidora" 
-                        class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    
-                    <!-- Loop para popular as distribuidoras -->
-                    {% for nome, codigo in distribuidoras %}
-                    <option value="{{ codigo }}">{{ nome }} (Cód: {{ codigo.zfill(3) }})</option>
-                    {% endfor %}
-                
-                </select>
-            </div>
-            
-            <button type="submit" 
-                    class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-200">
-                2. Gerar Número de UC
-            </button>
-        </form>
-
-        <!-- Seção de Resultado -->
-        {% if numero_uc %}
-        <div id="resultado" class="mt-8 pt-6 border-t border-gray-200">
-            <p class="text-sm font-medium text-gray-700 mb-2">Número gerado:</p>
-            <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-300 rounded-lg">
-                <span id="uc-gerada" class="text-xl md:text-2xl font-mono font-bold text-gray-800 tracking-wider">
-                    {{ numero_uc }}
-                </span>
-                <button onclick="copiarUC()" 
-                        class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                    Copiar
-                </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-3">
-                *O número sequencial (10 primeiros dígitos) é gerado aleatoriamente.
-            </p>
-        </div>
-        {% endif %}
-
-    </div>
-
-    <script>
-        function copiarUC() {
-            const ucGerada = document.getElementById('uc-gerada').innerText;
-            // Usa o método 'execCommand' para compatibilidade ampla
-            const tempInput = document.createElement('textarea');
-            tempInput.value = ucGerada;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            try {
-                document.execCommand('copy');
-                // Feedback visual
-                const resultadoDiv = document.getElementById('resultado');
-                if (resultadoDiv) {
-                    resultadoDiv.classList.add('flash');
-                    setTimeout(() => resultadoDiv.classList.remove('flash'), 500);
-                }
-            } catch (err) {
-                console.error('Falha ao copiar texto: ', err);
-            }
-            document.body.removeChild(tempInput);
-        }
-    </script>
-
-</body>
-</html>
-"""
+# A variável HTML_TEMPLATE foi removida daqui e movida 
+# para o arquivo 'templates/index.html'
 
 # --- Rotas da Aplicação ---
 
@@ -186,8 +91,9 @@ def index():
         numero_uc_formatado = formatar_uc(sequencial_str, distribuidora_cod, n2, n1)
 
     # Renderiza o template passando a lista de distribuidoras e o resultado (se houver)
-    return render_template_string(
-        HTML_TEMPLATE,
+    # Agora usa render_template() para carregar o arquivo .html
+    return render_template(
+        "index.html",
         distribuidoras=sorted(LISTA_DISTRIBUIDORAS), # Ordena a lista importada
         numero_uc=numero_uc_formatado
     )

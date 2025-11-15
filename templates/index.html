@@ -104,22 +104,41 @@
                         <div id="distribuidoraMenu"
                              class="absolute z-20 mt-2 w-full rounded-3xl bg-[var(--aneel-blue)] p-1 hidden">
 
-                            <div class="max-h-64 overflow-y-auto rounded-3xl bg-white py-1 custom-scroll">
+                            <div class="rounded-3xl bg-white">
+                                <div class="px-4 pt-4 pb-2 border-b border-slate-200">
+                                    <label for="distribuidoraSearch" class="sr-only">Buscar distribuidora</label>
+                                    <div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                                        <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+                                        </svg>
+                                        <input id="distribuidoraSearch"
+                                               type="text"
+                                               autocomplete="off"
+                                               placeholder="Digite para filtrar"
+                                               class="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none" />
+                                    </div>
+                                </div>
 
-                                {% for nome, codigo in distribuidoras %}
-                                <button type="button"
-                                        class="flex justify-between w-full text-left px-4 py-2 text-sm transition
-                                            {% if codigo == distribuidora_selecionada %}
-                                                bg-[var(--aneel-blue)] text-white
-                                            {% else %}
-                                                text-slate-700 hover:bg-[var(--aneel-blue)] hover:text-white
-                                            {% endif %}"
-                                        data-value="{{ codigo }}">
-                                    <span class="font-semibold">{{ nome }}</span>
-                                    <span>{{ codigo.zfill(3) }}</span>
-                                </button>
-                                {% endfor %}
+                                <div id="distribuidoraList" class="max-h-64 overflow-y-auto py-1 custom-scroll">
 
+                                    {% for nome, codigo in distribuidoras %}
+                                    <button type="button"
+                                            class="flex justify-between w-full text-left px-4 py-2 text-sm transition
+                                                {% if codigo == distribuidora_selecionada %}
+                                                    bg-[var(--aneel-blue)] text-white
+                                                {% else %}
+                                                    text-slate-700 hover:bg-[var(--aneel-blue)] hover:text-white
+                                                {% endif %}"
+                                            data-value="{{ codigo }}"
+                                            data-search="{{ nome|lower }}">
+                                        <span class="font-semibold">{{ nome }}</span>
+                                        <span>{{ codigo.zfill(3) }}</span>
+                                    </button>
+                                    {% endfor %}
+
+                                </div>
                             </div>
                         </div>
 
@@ -269,42 +288,88 @@ function copiarUC() {
 
 <script>
 (function () {
-    const dropdown   = document.getElementById('distribuidoraDropdown');
-    const button     = document.getElementById('distribuidoraButton');
-    const menu       = document.getElementById('distribuidoraMenu');
-    const input      = document.getElementById('distribuidoraInput');
-    const labelSpan  = document.getElementById('distribuidoraLabel');
+    const dropdown    = document.getElementById('distribuidoraDropdown');
+    const button      = document.getElementById('distribuidoraButton');
+    const menu        = document.getElementById('distribuidoraMenu');
+    const input       = document.getElementById('distribuidoraInput');
+    const labelSpan   = document.getElementById('distribuidoraLabel');
+    const searchInput = document.getElementById('distribuidoraSearch');
 
     if (!dropdown || !button || !menu || !input || !labelSpan) return;
 
+    const optionButtons = Array.from(menu.querySelectorAll('button[data-value]'));
+
+    const normalizar = (texto = '') =>
+        texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    const filtrarDistribuidoras = (termo = '') => {
+        const filtro = normalizar(termo);
+        optionButtons.forEach((btn) => {
+            const alvo = normalizar(btn.dataset.search || btn.innerText);
+            const corresponde = !filtro || alvo.includes(filtro);
+            btn.classList.toggle('hidden', !corresponde);
+        });
+    };
+
+    const resetFiltro = () => {
+        if (searchInput) {
+            searchInput.value = '';
+            filtrarDistribuidoras('');
+        }
+    };
+
+    const selecionarBotao = (botao) => {
+        const value = botao.getAttribute('data-value');
+
+        input.value = value;
+        // Copia exatamente o layout interno do botão selecionado
+        labelSpan.innerHTML = botao.innerHTML;
+
+        optionButtons.forEach((btn) => {
+            btn.classList.remove('bg-[var(--aneel-blue)]', 'text-white');
+            btn.classList.add('text-slate-700', 'hover:bg-[var(--aneel-blue)]', 'hover:text-white');
+        });
+
+        botao.classList.add('bg-[var(--aneel-blue)]', 'text-white');
+        botao.classList.remove('text-slate-700', 'hover:bg-[var(--aneel-blue)]', 'hover:text-white');
+
+        menu.classList.add('hidden');
+        resetFiltro();
+    };
+
     button.addEventListener('click', function (e) {
         e.stopPropagation();
+        const estavaFechado = menu.classList.contains('hidden');
         menu.classList.toggle('hidden');
+
+        if (estavaFechado && !menu.classList.contains('hidden')) {
+            resetFiltro();
+            searchInput?.focus();
+        }
     });
 
-    menu.querySelectorAll('button[data-value]').forEach(function (item) {
+    optionButtons.forEach((item) => {
         item.addEventListener('click', function () {
-            const value = this.getAttribute('data-value');
-
-            input.value = value;
-            // Copia exatamente o layout interno do botão selecionado
-            labelSpan.innerHTML = this.innerHTML;
-
-            menu.querySelectorAll('button[data-value]').forEach(function (btn) {
-                btn.classList.remove('bg-[var(--aneel-blue)]', 'text-white');
-                btn.classList.add('text-slate-700', 'hover:bg-[var(--aneel-blue)]', 'hover:text-white');
-            });
-
-            this.classList.add('bg-[var(--aneel-blue)]', 'text-white');
-            this.classList.remove('text-slate-700', 'hover:bg-[var(--aneel-blue)]', 'hover:text-white');
-
-            menu.classList.add('hidden');
+            selecionarBotao(this);
         });
+    });
+
+    searchInput?.addEventListener('input', function () {
+        filtrarDistribuidoras(this.value);
+    });
+
+    searchInput?.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const primeira = optionButtons.find((btn) => !btn.classList.contains('hidden'));
+            primeira?.click();
+        }
     });
 
     document.addEventListener('click', function (e) {
         if (!dropdown.contains(e.target)) {
             menu.classList.add('hidden');
+            resetFiltro();
         }
     });
 })();

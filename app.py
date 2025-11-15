@@ -74,10 +74,12 @@ def formatar_uc(sequencial_str: str, distribuidora_str: str, n2: str, n1: str) -
 @app.route('/', methods=['GET', 'POST'])
 def index():
     numero_uc_formatado = None
+    distribuidora_selecionada = None  # Variável para guardar a seleção
     
     if request.method == 'POST':
         # 1. Obter o código da distribuidora do formulário
         distribuidora_cod = request.form['distribuidora']
+        distribuidora_selecionada = distribuidora_cod  # Guarda o código selecionado
         
         # 2. Gerar um número sequencial aleatório de 10 dígitos (N15 a N6)
         # Conforme Seção 3.1.2
@@ -95,7 +97,8 @@ def index():
     return render_template(
         "index.html",
         distribuidoras=sorted(LISTA_DISTRIBUIDORAS), # Ordena a lista importada
-        numero_uc=numero_uc_formatado
+        numero_uc=numero_uc_formatado,
+        distribuidora_selecionada=distribuidora_selecionada # Passa a seleção para o template
     )
 
 # --- Executar o App ---

@@ -36,7 +36,9 @@
                     
                     <!-- Loop para popular as distribuidoras -->
                     {% for nome, codigo in distribuidoras %}
-                    <option value="{{ codigo }}">{{ nome }} (Cód: {{ codigo.zfill(3) }})</option>
+                    <option value="{{ codigo }}" {% if codigo == distribuidora_selecionada %}selected{% endif %}>
+                        {{ nome }} (Cód: {{ codigo.zfill(3) }})
+                    </option>
                     {% endfor %}
                 
                 </select>

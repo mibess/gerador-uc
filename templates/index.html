@@ -41,6 +41,29 @@
 
 <body class="min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100 flex items-center justify-center p-4">
 
+    <div id="alert-container" class="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4"></div>
+
+    <template id="alert-template">
+        <div data-alert-wrapper class="pointer-events-auto w-full max-w-xl transition duration-300 ease-out translate-y-4 opacity-0">
+            <div data-alert-surface class="flex items-start gap-3 rounded-2xl border bg-white/95 px-4 py-3 shadow-2xl shadow-black/10">
+                <div data-alert-icon class="mt-0.5 text-slate-500">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 text-sm">
+                    <p data-alert-title class="font-semibold text-slate-900"></p>
+                    <p data-alert-message class="text-xs text-slate-600 mt-0.5"></p>
+                </div>
+                <button type="button" data-alert-close class="text-slate-400 transition hover:text-slate-600" aria-label="Fechar aviso">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </template>
+
     <div class="max-w-6xl w-full bg-white/70 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-black/10 flex flex-col-reverse md:flex-row">
 
         <!-- FORM -->
@@ -198,6 +221,92 @@
     </div>
 
 <script>
+(function () {
+    const VARIANTS = {
+        success: {
+            surface: ['border-emerald-200', 'bg-emerald-50/95'],
+            icon: `
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+            `,
+            iconClass: ['text-emerald-600'],
+            fallbackTitle: 'Tudo certo!'
+        },
+        error: {
+            surface: ['border-rose-200', 'bg-rose-50/95'],
+            icon: `
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a1 1 0 00.86 1.5h18.63a1 1 0 00.86-1.5L13.7 3.86a1 1 0 00-1.72 0z"/>
+                </svg>
+            `,
+            iconClass: ['text-rose-600'],
+            fallbackTitle: 'Algo deu errado'
+        },
+        neutral: {
+            surface: ['border-slate-200', 'bg-white/95'],
+            icon: `
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            `,
+            iconClass: ['text-slate-500'],
+            fallbackTitle: 'Aviso'
+        }
+    };
+
+    const container = document.getElementById('alert-container');
+    const template = document.getElementById('alert-template');
+
+    if (!container || !template) {
+        window.AlertBanner = { show: () => {} };
+        return;
+    }
+
+    const show = ({ title = '', message = '', variant = 'neutral', duration = 4000 } = {}) => {
+        const variantConfig = VARIANTS[variant] || VARIANTS.neutral;
+        const fragment = template.content.cloneNode(true);
+        const wrapper = fragment.querySelector('[data-alert-wrapper]');
+        const surface = fragment.querySelector('[data-alert-surface]');
+        const iconSpot = fragment.querySelector('[data-alert-icon]');
+        const titleEl = fragment.querySelector('[data-alert-title]');
+        const messageEl = fragment.querySelector('[data-alert-message]');
+        const closeBtn = fragment.querySelector('[data-alert-close]');
+
+        variantConfig.surface.forEach(cls => surface.classList.add(cls));
+        iconSpot.classList.add(...variantConfig.iconClass);
+        iconSpot.innerHTML = variantConfig.icon;
+        titleEl.textContent = title || variantConfig.fallbackTitle;
+        messageEl.textContent = message;
+        messageEl.classList.toggle('hidden', !message);
+
+        let dismissed = false;
+        const dismiss = () => {
+            if (dismissed) return;
+            dismissed = true;
+            wrapper.classList.add('-translate-y-2', 'opacity-0');
+            setTimeout(() => wrapper.remove(), 200);
+        };
+
+        closeBtn.addEventListener('click', dismiss);
+
+        container.appendChild(wrapper);
+        requestAnimationFrame(() => {
+            wrapper.classList.remove('translate-y-4', 'opacity-0');
+        });
+
+        if (duration > 0) {
+            setTimeout(dismiss, duration);
+        }
+
+        return dismiss;
+    };
+
+    window.AlertBanner = { show };
+})();
+</script>
+
+<script>
 function copiarUC() {
     const text = document.getElementById('uc-gerada')?.innerText;
     if (!text) return;
@@ -272,9 +381,25 @@ function copiarUC() {
             resultContainer.classList.remove('opacity-0', 'translate-y-2');
             resultContainer.classList.add('opacity-100', 'translate-y-0');
             resultWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (window.AlertBanner && typeof window.AlertBanner.show === 'function') {
+                window.AlertBanner.show({
+                    title: 'Código UC gerado',
+                    message: 'Seu novo identificador está disponível logo abaixo. Copie e compartilhe quando precisar.',
+                    variant: 'success'
+                });
+            }
         } catch (error) {
             console.error(error);
-            alert(error.message || 'Erro ao gerar o código. Tente novamente.');
+            const fallbackMessage = error.message || 'Erro ao gerar o código. Tente novamente.';
+            if (window.AlertBanner && typeof window.AlertBanner.show === 'function') {
+                window.AlertBanner.show({
+                    title: 'Erro ao gerar o código',
+                    message: fallbackMessage,
+                    variant: 'error'
+                });
+            } else {
+                alert(fallbackMessage);
+            }
         } finally {
             submitButton.disabled = false;
             submitButton.innerText = defaultButtonText;

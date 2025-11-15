@@ -15,6 +15,26 @@
             --aneel-blue-light: #0A567A;
             --aneel-green: #7F8C2C;
         }
+
+        /* Scroll estilizado */
+        .custom-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: var(--aneel-blue) transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: var(--aneel-blue);
+            border-radius: 999px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: var(--aneel-blue-light);
+        }
     </style>
 </head>
 
@@ -29,7 +49,9 @@
             <div class="mb-8">
                 <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 mb-4">
                     <span class="inline-flex h-8 w-8 items-center justify-center rounded-full shadow"
-                          style="background-color: var(--aneel-green); color:white;">⚡</span>
+                          style="background-color: var(--aneel-green); color:white;">
+                        ⚡
+                    </span>
                     <span class="text-xs font-medium text-slate-600 uppercase tracking-wide">
                         UC ANEEL
                     </span>
@@ -50,23 +72,61 @@
                         Selecione a Distribuidora
                     </label>
 
-                    <div class="relative">
-                        <select id="distribuidora" name="distribuidora"
-                                class="w-full rounded-full border border-slate-300 bg-slate-50 px-5 py-3 text-sm text-slate-900 shadow-inner focus:outline-none focus:ring-2 focus:ring-[var(--aneel-green)] pr-10 appearance-none">
-                            <option value="" disabled {% if not distribuidora_selecionada %}selected{% endif %}>
-                                -- Escolha uma opção --
-                            </option>
+                    <!-- DROPDOWN CUSTOM -->
+                    <div id="distribuidoraDropdown" class="relative">
 
-                            {% for nome, codigo in distribuidoras %}
-                            <option value="{{ codigo }}" {% if codigo == distribuidora_selecionada %}selected{% endif %}>
-                                {{ nome }} (Cód: {{ codigo.zfill(3) }})
-                            </option>
-                            {% endfor %}
-                        </select>
+                        <!-- Botão -->
+                        <button type="button"
+                                id="distribuidoraButton"
+                                class="w-full flex items-center justify-between rounded-full border border-slate-300 bg-white px-5 py-3 text-sm text-slate-900 shadow-sm hover:border-[var(--aneel-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--aneel-blue-light)]">
+                            <div id="distribuidoraLabel" class="flex justify-between w-full">
+                                {% if distribuidora_selecionada %}
+                                    {% for nome, codigo in distribuidoras %}
+                                        {% if codigo == distribuidora_selecionada %}
+                                            <span class="font-semibold">{{ nome }}</span>
+                                            <span>{{ codigo.zfill(3) }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    -- Escolha uma opção --
+                                {% endif %}
+                            </div>
 
-                        <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-400">
-                            ▼
-                        </span>
+                            <svg class="h-4 w-4 text-slate-400 ml-3"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <!-- Menu dropdown (cores ANEEL) -->
+                        <div id="distribuidoraMenu"
+                             class="absolute z-20 mt-2 w-full rounded-3xl bg-[var(--aneel-blue)] p-1 hidden">
+
+                            <div class="max-h-64 overflow-y-auto rounded-3xl bg-white py-1 custom-scroll">
+
+                                {% for nome, codigo in distribuidoras %}
+                                <button type="button"
+                                        class="flex justify-between w-full text-left px-4 py-2 text-sm transition
+                                            {% if codigo == distribuidora_selecionada %}
+                                                bg-[var(--aneel-blue)] text-white
+                                            {% else %}
+                                                text-slate-700 hover:bg-[var(--aneel-blue)] hover:text-white
+                                            {% endif %}"
+                                        data-value="{{ codigo }}">
+                                    <span class="font-semibold">{{ nome }}</span>
+                                    <span>{{ codigo.zfill(3) }}</span>
+                                </button>
+                                {% endfor %}
+
+                            </div>
+                        </div>
+
+                        <!-- Hidden input -->
+                        <input type="hidden" name="distribuidora"
+                               id="distribuidoraInput"
+                               value="{{ distribuidora_selecionada or '' }}">
                     </div>
                 </div>
 
@@ -126,7 +186,7 @@ function copiarUC() {
     navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('copyButton');
         btn.innerText = "Copiado!";
-        btn.style.backgroundColor = "#2ECC71"; // verde sucesso temporário
+        btn.style.backgroundColor = "#2ECC71";
 
         setTimeout(() => {
             btn.innerText = "Copiar";
@@ -134,6 +194,49 @@ function copiarUC() {
         }, 2000);
     });
 }
+</script>
+
+<script>
+(function () {
+    const dropdown   = document.getElementById('distribuidoraDropdown');
+    const button     = document.getElementById('distribuidoraButton');
+    const menu       = document.getElementById('distribuidoraMenu');
+    const input      = document.getElementById('distribuidoraInput');
+    const labelSpan  = document.getElementById('distribuidoraLabel');
+
+    if (!dropdown || !button || !menu || !input || !labelSpan) return;
+
+    button.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+    });
+
+    menu.querySelectorAll('button[data-value]').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const value = this.getAttribute('data-value');
+
+            input.value = value;
+            // Copia exatamente o layout interno do botão selecionado
+            labelSpan.innerHTML = this.innerHTML;
+
+            menu.querySelectorAll('button[data-value]').forEach(function (btn) {
+                btn.classList.remove('bg-[var(--aneel-blue)]', 'text-white');
+                btn.classList.add('text-slate-700', 'hover:bg-[var(--aneel-blue)]', 'hover:text-white');
+            });
+
+            this.classList.add('bg-[var(--aneel-blue)]', 'text-white');
+            this.classList.remove('text-slate-700', 'hover:bg-[var(--aneel-blue)]', 'hover:text-white');
+
+            menu.classList.add('hidden');
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+})();
 </script>
 
 </body>

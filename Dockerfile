@@ -11,9 +11,14 @@ COPY requirements.txt .
 # 4. Instalação: Instala as dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. Cópia do Código: Copia o resto do seu projeto para o contêiner
-COPY . .
+# 5. Criação de usuário não-root
+RUN useradd -m appuser
+USER appuser
 
-# 6. Comando de Execução: Como o contêiner deve iniciar
+# 6. Cópia do Código: Copia o resto do seu projeto para o contêiner
+# Ajuste de permissões para o usuário não-root
+COPY --chown=appuser:appuser . .
+
+# 7. Comando de Execução: Como o contêiner deve iniciar
 # Use 'gunicorn' para rodar a app na porta 5000
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

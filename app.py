@@ -1,6 +1,7 @@
 
 # Trocamos 'render_template_string' por 'render_template'
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_from_directory
+
 # Importa a lista do novo arquivo
 from distribuidoras import LISTA_DISTRIBUIDORAS
 from gerador_uc import gerar_uc_para_distribuidora
@@ -11,14 +12,19 @@ app = Flask(__name__, static_folder='statics', static_url_path='/statics')
 # Mantemos a lista ordenada em memória para evitar reordená-la a cada requisição.
 DISTRIBUIDORAS_ORDENADAS = sorted(LISTA_DISTRIBUIDORAS)
 
-# --- Lógica de Negócio (Baseada no Manual ANEL) ---
+# --- ROTAS PARA SEO (GOOGLE) ---
+@app.route('/robots.txt')
+def robots():
+    # O Google busca na raiz, nós pegamos da pasta 'statics' e entregamos
+    return send_from_directory('statics', 'robots.txt')
 
-# Extraído do ANEXO I (páginas 8-10 do PDF)
-# (Sigla, Código)
-# A lista foi movida para o arquivo distribuidoras.py
-# DISTRIBUIDORAS = [
+@app.route('/sitemap.xml')
+def sitemap():
+    # Mesma coisa para o sitemap
+    return send_from_directory('statics', 'sitemap.xml')
+# --- FIM DAS ROTAS PARA SEO ---
+
 # --- Rotas da Aplicação ---
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     numero_uc_formatado = None
@@ -61,7 +67,6 @@ def gerar_uc_api():
     }, 200
 
 # --- Executar o App ---
-
 if __name__ == '__main__':
     # Adiciona um host='0.0.0.0' para ser acessível na rede, se necessário
     app.run(debug=True, port=5000)

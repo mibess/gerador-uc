@@ -41,9 +41,29 @@
                 background-color: var(--aneel-blue-light);
             }
         </style>
+        <script type="application/ld+json">
+            {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Gerador de UC Mibess",
+            "url": "https://geradoruc.mibess.com.br/",
+            "description": "Ferramenta online gratuita para gerar e validar códigos de UC (Unidade Consumidora) no padrão oficial da Aneel.",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Any",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "BRL"
+            },
+            "author": {
+                "@type": "Organization",
+                "name": "Mibess"
+            }
+            }
+        </script>
     </head>
 
-    <body class="min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100 flex items-center justify-center p-4">
+    <body class="min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100 flex flex-col items-center justify-center p-4">
 
         <div id="alert-container" class="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4"></div>
 
@@ -68,7 +88,7 @@
             </div>
         </template>
 
-        <div class="max-w-6xl w-full bg-white/70 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-black/10 flex flex-col-reverse md:flex-row">
+        <div class="max-w-4xl w-full bg-white/70 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-black/10 flex flex-col-reverse md:flex-row">
 
             <!-- FORM -->
             <div class="w-full px-8 sm:px-10 py-10 bg-gradient-to-b from-slate-50 via-white to-slate-100 rounded-b-[32px] md:rounded-none md:rounded-l-[32px]">
@@ -223,8 +243,43 @@
             </div>
 
         </div>
+        
+        <section class="max-w-4xl mx-auto mt-16 mb-10 px-6 text-slate-700">
+            
+            <div class="prose prose-slate max-w-none">
+                <h2 class="text-2xl font-bold text-[var(--aneel-blue)] mb-4">
+                    Sobre o Gerador de UC (Padrão Aneel)
+                </h2>
+                
+                <p class="mb-4">
+                    O <strong>Gerador de Código UC</strong> é uma ferramenta essencial para desenvolvedores, analistas de QA e testadores de software que trabalham com sistemas de energia elétrica. Nossa ferramenta cria números válidos de <strong>Unidade Consumidora (UC)</strong> respeitando o algoritmo de módulo e os prefixos das principais distribuidoras do Brasil.
+                </p>
 
-        <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+                <div class="grid md:grid-cols-2 gap-8 mt-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 mb-2">O que é uma Unidade Consumidora (UC)?</h3>
+                        <p class="text-sm leading-relaxed">
+                            Segundo a regulação da <strong>Aneel</strong> (Agência Nacional de Energia Elétrica), a UC é o conjunto de instalações e equipamentos elétricos caracterizados pelo recebimento de energia em um só ponto de entrega. Cada residência ou comércio possui um código único de identificação.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 mb-2">Para que serve este gerador?</h3>
+                        <p class="text-sm leading-relaxed">
+                            Este sistema é voltado para fins de <strong>testes de software</strong> (Mocks). Ele permite simular cadastros em sistemas de gestão, faturamento e CRM de companhias elétricas sem utilizar dados reais de clientes, garantindo conformidade com a LGPD.
+                        </p>
+                    </div>
+                </div>
 
+                <div class="mt-8 p-4 bg-white/60 rounded-xl border border-slate-200">
+                    <h3 class="text-sm font-bold text-slate-900 mb-2">Distribuidoras Suportadas</h3>
+                    <p class="text-xs text-slate-500">
+                        O algoritmo suporta a geração de códigos válidos para diversas concessionárias, incluindo Enel, CPFL, Cemig, Light, Neoenergia, Equatorial, entre outras listadas no padrão nacional.
+                    </p>
+                </div>
+            </div>
+
+        </section>
     </body>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </html>

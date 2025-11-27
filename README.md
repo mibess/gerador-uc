@@ -7,7 +7,7 @@ Aplicação web e API que automatiza a geração do identificador da Unidade Con
   - Gera sequências de 15 dígitos, calcula os dígitos verificadores N2 e N1 e devolve o código já formatado.
   - Interface única em `templates/index.html` com dropdown filtrável e alertas Toast.
   - API sem recarregamento via `fetch` com rota `/api/gerar-uc`.
-  - Assets servidos a partir de `statics/` para permitir cache via Nginx.
+  - Assets servidos a partir de `static/` para permitir cache via Nginx.
   - Deploy containerizado com Gunicorn atrás de um proxy reverso Nginx.
 
 ## Stack principal
@@ -26,11 +26,11 @@ Aplicação web e API que automatiza a geração do identificador da Unidade Con
 |-- distribuidoras.py     # lista completa (nome, código) usada em memória
 |-- templates/
 |   \-- index.html        # UI com dropdown customizado, alertas e fetch
-|-- statics/              # imagens e favicons mantidos fora do pacote
+|-- static/               # imagens e favicons mantidos fora do pacote
 |-- requirements.txt      # dependências de runtime e testes
 |-- Dockerfile            # imagem Python + Gunicorn
 |-- docker-compose.yml    # orquestra app (Gunicorn) e Nginx
-|-- nginx.conf            # reverse proxy + alias /statics
+|-- nginx.conf            # reverse proxy + alias /static
 \-- replace_script.py     # utilitário para sobrescrever o script do dropdown
 ```
 
@@ -71,7 +71,7 @@ Aplicação web e API que automatiza a geração do identificador da Unidade Con
     ```
 3.  Acesse `http://localhost:8095` (porta externa mapeada para o Nginx interno).
 
-O volume nomeado `static_volume` compartilha `statics/` entre os containers para preservar assets gerados.
+O volume nomeado `static_volume` compartilha `static/` entre os containers para preservar assets gerados.
 
 ## Endpoints
 
@@ -111,7 +111,7 @@ pytest --cov=app
 
   - `distribuidoras.py`: mantenha a relação Nome/Código atualizada conforme publicações da ANEEL. `DISTRIBUIDORAS_ORDENADAS` é calculada em memória ao subir o app.
   - `replace_script.py`: utilitário para substituir o script do dropdown no template quando for necessário atualizar a implementação sem editar manually.
-  - `statics/`: imagens, favicons e ícones usados pela interface. Ao adicionar novos arquivos lembre-se do volume compartilhado no Docker Compose.
+  - `static/`: imagens, favicons e ícones usados pela interface. Ao adicionar novos arquivos lembre-se do volume compartilhado no Docker Compose.
 
 ## Personalização
 

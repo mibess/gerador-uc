@@ -7,8 +7,8 @@ services:
     expose:
       - 5000  # Expõe a porta 5000 (do Gunicorn) para a rede interna do Docker
     volumes:
-      # Cria um volume compartilhado para os arquivos estáticos ( O padrão do Flask é static eu mudei para statics pelo estudo )
-      - static_volume:/app/statics
+      # Cria um volume compartilhado para os arquivos estáticos ( O padrão do Flask é static eu mudei para static pelo estudo )
+      - static_volume:/app/static
 
   # 2. Serviço do Proxy Reverso Nginx
   nginx:
@@ -22,7 +22,7 @@ services:
       # Monta nosso arquivo de configuração personalizado
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       # Monta o volume de estáticos (como somente leitura)
-      - static_volume:/app/statics:ro
+      - static_volume:/app/static:ro
     depends_on:
       - app  # Garante que o 'app' inicie antes do 'nginx'
 

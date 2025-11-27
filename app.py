@@ -7,7 +7,7 @@ from distribuidoras import LISTA_DISTRIBUIDORAS
 from gerador_uc import gerar_uc_para_distribuidora
 
 # Inicializa o app Flask
-app = Flask(__name__, static_folder='statics', static_url_path='/statics')
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # Mantemos a lista ordenada em memória para evitar reordená-la a cada requisição.
 DISTRIBUIDORAS_ORDENADAS = sorted(LISTA_DISTRIBUIDORAS)
@@ -15,13 +15,13 @@ DISTRIBUIDORAS_ORDENADAS = sorted(LISTA_DISTRIBUIDORAS)
 # --- ROTAS PARA SEO (GOOGLE) ---
 @app.route('/robots.txt')
 def robots():
-    # O Google busca na raiz, nós pegamos da pasta 'statics' e entregamos
-    return send_from_directory('statics', 'robots.txt')
+    # O Google busca na raiz, nós pegamos da pasta 'static' e entregamos
+    return send_from_directory('static', 'robots.txt')
 
 @app.route('/sitemap.xml')
 def sitemap():
     # Mesma coisa para o sitemap
-    return send_from_directory('statics', 'sitemap.xml')
+    return send_from_directory('static', 'sitemap.xml')
 # --- FIM DAS ROTAS PARA SEO ---
 
 # --- Rotas da Aplicação ---

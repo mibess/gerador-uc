@@ -3,9 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gerador de código UC</title>
+        <title>Gerador de código UC Online - Gerar e validar códigos de Unidade Consumidora</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+        
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='favicon.png') }}">
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.png') }}">
+
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <meta name="google-site-verification" content="KiY1wxvRI191qkfGLV9GJW7N_yMeo8RIXwwwhqa23FY" />
@@ -272,11 +275,52 @@
                         </p>
                     </div>
                 </div>
+            </div>
 
-                <div class="mt-8 p-4 bg-white/60 rounded-xl border border-slate-200">
-                    <h3 class="text-sm font-bold text-slate-900 mb-2">Distribuidoras Suportadas</h3>
-                    <p class="text-xs text-slate-500">
-                        O algoritmo suporta a geração de códigos válidos para diversas concessionárias, incluindo Enel, CPFL, Cemig, Light, Neoenergia, Equatorial, entre outras listadas no padrão nacional.
+        </section>
+
+        <section class="max-w-4xl mx-auto mt-10 mb-10 px-6 text-slate-700">
+    
+            <div class="prose prose-slate max-w-none">
+                <h2 class="text-2xl font-bold text-[var(--aneel-blue)] mb-6">
+                    Perguntas Frequentes sobre a Geração de UC
+                </h2>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Como gerar uma UC válida para testes?</h3>
+                    <p class="text-sm leading-relaxed mb-4">
+                        Para <strong>gerar uma UC</strong> válida, basta selecionar a distribuidora de energia desejada no menu acima e clicar em "Gerar Código". Nossa ferramenta utiliza o algoritmo oficial (módulo 10 ou 11) para <strong>criar um número de instalação</strong> que passará na validação dos sistemas da Aneel.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">O que é o código da instalação?</h3>
+                        <p class="text-sm leading-relaxed">
+                            O código da instalação, também conhecido como <strong>Número da UC</strong>, <strong>Matrícula</strong> ou "Seu Código" na conta de luz, é o identificador único do imóvel na rede elétrica.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">Serve para Mocks e QA?</h3>
+                        <p class="text-sm leading-relaxed">
+                            Sim. Se você precisa de <strong>massa de dados</strong> para testes de software, este gerador fornece números matematicamente válidos para popular bancos de dados de desenvolvimento.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-5 bg-white/60 rounded-xl border border-slate-200">
+                    <h3 class="text-sm font-bold text-slate-900 mb-3">Termos relacionados e Distribuidoras</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Nossa ferramenta suporta a validação e criação de códigos para as principais concessionárias do Brasil. Use para obter códigos da: 
+                        <strong>Enel</strong> (SP, RJ, CE, GO), 
+                        <strong>CPFL</strong> (Paulista, Piratininga), 
+                        <strong>Light</strong>, 
+                        <strong>Cemig</strong>, 
+                        <strong>Neoenergia</strong> (Coelba, Celpe, Cosern), 
+                        <strong>Equatorial</strong> e 
+                        <strong>Copel</strong>. 
+                        Compatível com validações de DV (Dígito Verificador) e REN 1.095/2024.
                     </p>
                 </div>
             </div>

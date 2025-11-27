@@ -1,241 +1,230 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de código UC</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gerador de código UC</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <meta name="google-site-verification" content="KiY1wxvRI191qkfGLV9GJW7N_yMeo8RIXwwwhqa23FY" />
-    <meta name="description" content="Gere e valide códigos de UC (Unidade Consumidora) no formato oficial da Aneel. Ferramenta gratuita para desenvolvedores testarem softwares de energia elétrica.">
-    <link rel="canonical" href="https://geradoruc.mibess.com.br/" />
-    <script type="application/ld+json">
-        {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Gerador UC Mibess",
-        "url": "https://geradoruc.mibess.com.br/",
-        "description": "Ferramenta para gerar e validar códigos UC.",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "All"
-        }
-    </script>
+        <meta name="google-site-verification" content="KiY1wxvRI191qkfGLV9GJW7N_yMeo8RIXwwwhqa23FY" />
+        <meta name="description" content="Gere e valide códigos de UC (Unidade Consumidora) no formato oficial da Aneel. Ferramenta gratuita para desenvolvedores testarem softwares de energia elétrica.">
+        <link rel="canonical" href="https://geradoruc.mibess.com.br/" />
 
-    <style>
-        body { font-family: 'IBM Plex Sans', sans-serif; }
+        <style>
+            body { font-family: 'IBM Plex Sans', sans-serif; }
 
-        :root {
-            --aneel-blue: #013F5C;
-            --aneel-blue-light: #0A567A;
-            --aneel-green: #7F8C2C;
-        }
+            :root {
+                --aneel-blue: #013F5C;
+                --aneel-blue-light: #0A567A;
+                --aneel-green: #7F8C2C;
+            }
 
-        /* Scroll estilizado */
-        .custom-scroll {
-            scrollbar-width: thin;
-            scrollbar-color: var(--aneel-blue) transparent;
-        }
+            /* Scroll estilizado */
+            .custom-scroll {
+                scrollbar-width: thin;
+                scrollbar-color: var(--aneel-blue) transparent;
+            }
 
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background-color: var(--aneel-blue);
-            border-radius: 999px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background-color: var(--aneel-blue-light);
-        }
-    </style>
-</head>
+            .custom-scroll::-webkit-scrollbar {
+                width: 6px;
+            }
+            .custom-scroll::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .custom-scroll::-webkit-scrollbar-thumb {
+                background-color: var(--aneel-blue);
+                border-radius: 999px;
+            }
+            .custom-scroll::-webkit-scrollbar-thumb:hover {
+                background-color: var(--aneel-blue-light);
+            }
+        </style>
+    </head>
 
-<body class="min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100 flex items-center justify-center p-4">
+    <body class="min-h-screen bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100 flex items-center justify-center p-4">
 
-    <div id="alert-container" class="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4"></div>
+        <div id="alert-container" class="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4"></div>
 
-    <template id="alert-template">
-        <div data-alert-wrapper class="pointer-events-auto w-full max-w-xl transition duration-300 ease-out translate-y-4 opacity-0">
-            <div data-alert-surface class="flex items-start gap-3 rounded-2xl border bg-white/95 px-4 py-3 shadow-2xl shadow-black/10">
-                <div data-alert-icon class="mt-0.5 text-slate-500">
-                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+        <template id="alert-template">
+            <div data-alert-wrapper class="pointer-events-auto w-full max-w-xl transition duration-300 ease-out translate-y-4 opacity-0">
+                <div data-alert-surface class="flex items-start gap-3 rounded-2xl border bg-white/95 px-4 py-3 shadow-2xl shadow-black/10">
+                    <div data-alert-icon class="mt-0.5 text-slate-500">
+                        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 text-sm">
+                        <p data-alert-title class="font-semibold text-slate-900"></p>
+                        <p data-alert-message class="text-xs text-slate-600 mt-0.5"></p>
+                    </div>
+                    <button type="button" data-alert-close class="text-slate-400 transition hover:text-slate-600" aria-label="Fechar aviso">
+                        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/>
+                        </svg>
+                    </button>
                 </div>
-                <div class="flex-1 text-sm">
-                    <p data-alert-title class="font-semibold text-slate-900"></p>
-                    <p data-alert-message class="text-xs text-slate-600 mt-0.5"></p>
-                </div>
-                <button type="button" data-alert-close class="text-slate-400 transition hover:text-slate-600" aria-label="Fechar aviso">
-                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/>
-                    </svg>
-                </button>
             </div>
-        </div>
-    </template>
+        </template>
 
-    <div class="max-w-6xl w-full bg-white/70 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-black/10 flex flex-col-reverse md:flex-row">
+        <div class="max-w-6xl w-full bg-white/70 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-black/10 flex flex-col-reverse md:flex-row">
 
-        <!-- FORM -->
-        <div class="w-full px-8 sm:px-10 py-10 bg-gradient-to-b from-slate-50 via-white to-slate-100 rounded-b-[32px] md:rounded-none md:rounded-l-[32px]">
+            <!-- FORM -->
+            <div class="w-full px-8 sm:px-10 py-10 bg-gradient-to-b from-slate-50 via-white to-slate-100 rounded-b-[32px] md:rounded-none md:rounded-l-[32px]">
 
-            <!-- HEADER -->
-            <div class="mb-8">
-                <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 mb-4">
-                    <img src="{{ url_for('static', filename='03-favicon.png') }}" alt="Medidor em Foco" class="h-8 w-8 items-center justify-center object-cover">
-                    <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        UC - Unidade Consumidora
-                    </span>
+                <!-- HEADER -->
+                <div class="mb-8">
+                    <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 mb-4">
+                        <img src="{{ url_for('static', filename='03-favicon.png') }}" alt="Medidor em Foco" class="h-8 w-8 items-center justify-center object-cover">
+                        <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                            UC - Unidade Consumidora
+                        </span>
+                    </div>
+
+                    <h1 class="text-3xl font-semibold" style="color: var(--aneel-blue);">
+                        Gerador de Código UC
+                    </h1>
+                    <p class="text-sm text-slate-600">
+                        Padrão ANEEL REN nº 1.095/2024
+                    </p>
                 </div>
 
-                <h1 class="text-3xl font-semibold" style="color: var(--aneel-blue);">
-                    Gerador de Código UC
-                </h1>
-                <p class="text-sm text-slate-600">
-                    Padrão ANEEL REN nº 1.095/2024
-                </p>
-            </div>
+                <!-- FORM SELECT -->
+                <form id="geradorForm" method="POST" action="/" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Selecione a Distribuidora
+                        </label>
 
-            <!-- FORM SELECT -->
-            <form id="geradorForm" method="POST" action="/" class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Selecione a Distribuidora
-                    </label>
+                        <!-- DROPDOWN CUSTOM -->
+                        <div id="distribuidoraDropdown" class="relative">
 
-                    <!-- DROPDOWN CUSTOM -->
-                    <div id="distribuidoraDropdown" class="relative">
+                            <!-- Botão -->
+                            <button type="button"
+                                    id="distribuidoraButton"
+                                    class="w-full flex items-center justify-between rounded-full border border-slate-300 bg-white px-5 py-3 text-sm text-slate-900 shadow-sm hover:border-[var(--aneel-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--aneel-blue-light)]">
+                                <div id="distribuidoraLabel" class="flex justify-between w-full">
+                                    {% if distribuidora_selecionada %}
+                                        {% for nome, codigo in distribuidoras %}
+                                            {% if codigo == distribuidora_selecionada %}
+                                                <span class="font-semibold">{{ nome }}</span>
+                                                <span>{{ codigo.zfill(3) }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        -- Escolha uma opção --
+                                    {% endif %}
+                                </div>
 
-                        <!-- Botão -->
-                        <button type="button"
-                                id="distribuidoraButton"
-                                class="w-full flex items-center justify-between rounded-full border border-slate-300 bg-white px-5 py-3 text-sm text-slate-900 shadow-sm hover:border-[var(--aneel-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--aneel-blue-light)]">
-                            <div id="distribuidoraLabel" class="flex justify-between w-full">
-                                {% if distribuidora_selecionada %}
-                                    {% for nome, codigo in distribuidoras %}
-                                        {% if codigo == distribuidora_selecionada %}
+                                <svg class="h-4 w-4 text-slate-400 ml-3"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+
+                            <!-- Menu dropdown (cores ANEEL) -->
+                            <div id="distribuidoraMenu"
+                                class="absolute z-20 mt-2 w-full rounded-3xl bg-[var(--aneel-blue)] p-1 hidden">
+
+                                <div class="rounded-3xl bg-white">
+                                    <div class="px-4 pt-4 pb-2 border-b border-slate-200">
+                                        <label for="distribuidoraSearch" class="sr-only">Buscar distribuidora</label>
+                                        <div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                                            <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+                                            </svg>
+                                            <input id="distribuidoraSearch"
+                                                type="text"
+                                                autocomplete="off"
+                                                placeholder="Digite para filtrar"
+                                                class="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none" />
+                                        </div>
+                                    </div>
+
+                                    <div id="distribuidoraList" class="max-h-64 overflow-y-auto py-1 custom-scroll">
+
+                                        {% for nome, codigo in distribuidoras %}
+                                        <button type="button"
+                                                class="flex justify-between w-full text-left px-4 py-2 text-sm transition
+                                                    {% if codigo == distribuidora_selecionada %}
+                                                        bg-[var(--aneel-blue)] text-white
+                                                    {% else %}
+                                                        text-slate-700 hover:bg-[var(--aneel-blue)] hover:text-white
+                                                    {% endif %}"
+                                                data-value="{{ codigo }}"
+                                                data-search="{{ nome|lower }}">
                                             <span class="font-semibold">{{ nome }}</span>
                                             <span>{{ codigo.zfill(3) }}</span>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% else %}
-                                    -- Escolha uma opção --
-                                {% endif %}
-                            </div>
+                                        </button>
+                                        {% endfor %}
 
-                            <svg class="h-4 w-4 text-slate-400 ml-3"
-                                 xmlns="http://www.w3.org/2000/svg" fill="none"
-                                 viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <!-- Menu dropdown (cores ANEEL) -->
-                        <div id="distribuidoraMenu"
-                             class="absolute z-20 mt-2 w-full rounded-3xl bg-[var(--aneel-blue)] p-1 hidden">
-
-                            <div class="rounded-3xl bg-white">
-                                <div class="px-4 pt-4 pb-2 border-b border-slate-200">
-                                    <label for="distribuidoraSearch" class="sr-only">Buscar distribuidora</label>
-                                    <div class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                                        <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
-                                        </svg>
-                                        <input id="distribuidoraSearch"
-                                               type="text"
-                                               autocomplete="off"
-                                               placeholder="Digite para filtrar"
-                                               class="w-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none" />
                                     </div>
                                 </div>
-
-                                <div id="distribuidoraList" class="max-h-64 overflow-y-auto py-1 custom-scroll">
-
-                                    {% for nome, codigo in distribuidoras %}
-                                    <button type="button"
-                                            class="flex justify-between w-full text-left px-4 py-2 text-sm transition
-                                                {% if codigo == distribuidora_selecionada %}
-                                                    bg-[var(--aneel-blue)] text-white
-                                                {% else %}
-                                                    text-slate-700 hover:bg-[var(--aneel-blue)] hover:text-white
-                                                {% endif %}"
-                                            data-value="{{ codigo }}"
-                                            data-search="{{ nome|lower }}">
-                                        <span class="font-semibold">{{ nome }}</span>
-                                        <span>{{ codigo.zfill(3) }}</span>
-                                    </button>
-                                    {% endfor %}
-
-                                </div>
                             </div>
+
+                            <!-- Hidden input -->
+                            <input type="hidden" name="distribuidora"
+                                id="distribuidoraInput"
+                                value="{{ distribuidora_selecionada or '' }}">
+                        </div>
+                    </div>
+
+                    <!-- BOTÃO AZUL ANEEL -->
+                    <button type="submit"
+                            class="w-full rounded-full text-white font-semibold py-3 text-sm shadow-md transition-all duration-200"
+                            style="background-color: var(--aneel-blue);"
+                            onmouseover="this.style.backgroundColor='var(--aneel-blue-light)'"
+                            onmouseout="this.style.backgroundColor='var(--aneel-blue)'">
+                        Gerar Código
+                    </button>
+
+                </form>
+
+                <!-- RESULTADO -->
+                <div id="result-wrapper" class="{% if not numero_uc %}hidden{% endif %}">
+                    <div id="result-container"
+                        class="mt-8 pt-6 border-t border-slate-300/70 transition-all duration-300 ease-out transform {% if numero_uc %}opacity-100 translate-y-0{% else %}opacity-0 translate-y-2{% endif %}">
+                        <p class="text-xs font-medium text-slate-600 mb-3 text-center">
+                            Novo Código de Unidade Consumidora (UC):
+                        </p>
+
+                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-300 px-4 py-3 shadow-sm">
+                            <span id="uc-gerada" class="text-lg font-mono font-semibold tracking-[0.2em] text-slate-900" aria-live="polite">
+                                {{ numero_uc or '' }}
+                            </span>
+
+                            <button id="copyButton"
+                                    onclick="copiarUC()"
+                                    class="ml-3 rounded-full text-white px-3 py-2 text-xs font-medium transition"
+                                    style="background-color: var(--aneel-blue-light);">
+                                Copiar
+                            </button>
                         </div>
 
-                        <!-- Hidden input -->
-                        <input type="hidden" name="distribuidora"
-                               id="distribuidoraInput"
-                               value="{{ distribuidora_selecionada or '' }}">
+                        <p class="mt-3 text-[11px] text-center text-slate-500">
+                            *O número sequencial (10 primeiros dígitos) é gerado aleatoriamente.
+                        </p>
                     </div>
                 </div>
 
-                <!-- BOTÃO AZUL ANEEL -->
-                <button type="submit"
-                        class="w-full rounded-full text-white font-semibold py-3 text-sm shadow-md transition-all duration-200"
-                        style="background-color: var(--aneel-blue);"
-                        onmouseover="this.style.backgroundColor='var(--aneel-blue-light)'"
-                        onmouseout="this.style.backgroundColor='var(--aneel-blue)'">
-                    Gerar Código
-                </button>
 
-            </form>
-
-            <!-- RESULTADO -->
-            <div id="result-wrapper" class="{% if not numero_uc %}hidden{% endif %}">
-                <div id="result-container"
-                     class="mt-8 pt-6 border-t border-slate-300/70 transition-all duration-300 ease-out transform {% if numero_uc %}opacity-100 translate-y-0{% else %}opacity-0 translate-y-2{% endif %}">
-                    <p class="text-xs font-medium text-slate-600 mb-3 text-center">
-                        Novo Código de Unidade Consumidora (UC):
-                    </p>
-
-                    <div class="flex items-center justify-between rounded-2xl bg-slate-50 border border-slate-300 px-4 py-3 shadow-sm">
-                        <span id="uc-gerada" class="text-lg font-mono font-semibold tracking-[0.2em] text-slate-900" aria-live="polite">
-                            {{ numero_uc or '' }}
-                        </span>
-
-                        <button id="copyButton"
-                                onclick="copiarUC()"
-                                class="ml-3 rounded-full text-white px-3 py-2 text-xs font-medium transition"
-                                style="background-color: var(--aneel-blue-light);">
-                            Copiar
-                        </button>
-                    </div>
-
-                    <p class="mt-3 text-[11px] text-center text-slate-500">
-                        *O número sequencial (10 primeiros dígitos) é gerado aleatoriamente.
-                    </p>
-                </div>
             </div>
 
+            <!-- IMAGEM -->
+            <div class="w-full md:w-7/12 relative h-80 md:h-auto rounded-t-[32px] md:rounded-none md:rounded-r-[32px] overflow-hidden">
+                <img src="{{ url_for('static', filename='02-medidor.png') }}"
+                    alt="Medidor em Foco" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-br from-black/10 via-black/5 to-black/20 pointer-events-none"></div>
+            </div>
 
         </div>
 
-        <!-- IMAGEM -->
-        <div class="w-full md:w-7/12 relative h-80 md:h-auto rounded-t-[32px] md:rounded-none md:rounded-r-[32px] overflow-hidden">
-            <img src="{{ url_for('static', filename='02-medidor.png') }}"
-                 alt="Medidor em Foco" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-br from-black/10 via-black/5 to-black/20 pointer-events-none"></div>
-        </div>
+        <script src="{{ url_for('statics', filename='js/script.js') }}"></script>
 
-    </div>
-
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-
-</body>
+    </body>
 </html>
